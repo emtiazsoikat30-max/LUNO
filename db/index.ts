@@ -1,6 +1,6 @@
-import { env } from "cloudflare:workers";
 import { drizzle } from "drizzle-orm/d1";
 import * as schema from "./schema";
+import { platformEnv as env } from "@/lib/platform-env";
 
 export function getDb() {
   if (!env.DB) {

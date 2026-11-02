@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers";
+import { platformEnv as env } from "@/lib/platform-env";
 import { getChatGPTUser } from "@/app/chatgpt-auth";
 
 export class AuthorizationError extends Error {

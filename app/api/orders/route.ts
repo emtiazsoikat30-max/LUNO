@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers";
+import { platformEnv as env } from "@/lib/platform-env";
 import { NextResponse } from "next/server";
 import { AuthorizationError, requireCustomer } from "@/lib/authorization";
 
