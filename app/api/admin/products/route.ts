@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const db = env.DB; if (!db) return NextResponse.json({ error: "Store database is not configured" }, { status: 503 });
     const data = await request.json() as { name?: string; slug?: string; description?: string; priceBdt?: number; stock?: number; categoryId?: number; imageUrl?: string };
     const priceBdt = data.priceBdt; const stock = data.stock;
-    if (!data.name?.trim() || !/^[a-z0-9-]+$/.test(data.slug ?? "") || !Number.isInteger(priceBdt) || priceBdt < 0 || !Number.isInteger(stock) || stock < 0) {
+    if (!data.name?.trim() || !/^[a-z0-9-]+$/.test(data.slug ?? "") || typeof priceBdt !== "number" || !Number.isInteger(priceBdt) || priceBdt < 0 || typeof stock !== "number" || !Number.isInteger(stock) || stock < 0) {
       return NextResponse.json({ error: "Invalid product data" }, { status: 400 });
     }
     const now = new Date().toISOString();
