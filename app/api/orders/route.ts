@@ -8,7 +8,7 @@ export async function GET() {
   try {
     const user = await requireCustomer();
     const db = env.DB; if (!db) return NextResponse.json({ error: "Store database is not configured" }, { status: 503 });
-    const { results } = await env.DB.prepare(
+    const { results } = await db.prepare(
       "SELECT id, order_number AS orderNumber, order_status AS orderStatus, payment_status AS paymentStatus, subtotal_bdt AS subtotalBdt, created_at AS createdAt FROM orders WHERE customer_auth_user_id = ? ORDER BY id DESC"
     ).bind(user.userId).all();
     return NextResponse.json({ orders: results });
