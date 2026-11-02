@@ -1,0 +1,14 @@
+"use client";
+import { useEffect, useState } from "react";
+type Order = { orderNumber: string; productName: string; productImage: string; unitPriceBdt: number; quantity: number; customerName: string; phone: string; address: string; status: string; createdAt: string };
+const statuses = ["pending", "processing", "shipped", "delivered", "cancelled"];
+export function AdminOrders() {
+  const [orders, setOrders] = useState<Order[]>([]); const [error, setError] = useState(""); const [loading, setLoading] = useState(true);
+  async function load() { const response = await fetch("/api/admin/store-orders", { cache: "no-store" }); if (!response.ok) { setError("Could not load orders."); setLoading(false); return; } const body = await response.json() as { orders: Order[] }; setOrders(body.orders); setLoading(false); }
+  useEffect(() => { void load(); }, []);
+  async function update(orderNumber: string, status: string) { const response = await fetch("/api/admin/store-orders", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderNumber, status }) }); if (!response.ok) { setError("Status update failed."); return; } setOrders((items) => items.map((item) => item.orderNumber === orderNumber ? { ...item, status } : item)); }
+  if (loading) return <p className="mt-8 text-sm text-[#40506b]">Loading secure order records…</p>;
+  if (error) return <p className="mt-8 text-sm text-red-700">{error}</p>;
+  if (!orders.length) return <p className="mt-8 border border-dashed border-[#0b1830]/20 p-6 text-sm text-[#40506b]">No orders yet.</p>;
+  return <div className="mt-8 space-y-5">{orders.map((order) => <article key={order.orderNumber} className="grid gap-5 border border-[#0b1830]/15 bg-white p-5 md:grid-cols-[110px_1fr_auto]"><img src={order.productImage} alt="" className="h-28 w-28 object-cover"/><div><p className="text-xs font-bold tracking-[.12em] text-[#b38b45]">{order.orderNumber}</p><h2 className="mt-1 text-lg font-bold text-[#09172e]">{order.productName}</h2><p className="mt-1 text-sm text-[#40506b]">Tk {order.unitPriceBdt.toLocaleString("en-BD")} · Qty {order.quantity}</p><div className="mt-4 text-sm leading-6 text-[#243554]"><b>{order.customerName}</b><br/>{order.phone}<br/>{order.address}</div></div><div className="min-w-36"><label className="text-xs font-bold tracking-[.1em] text-[#40506b]">ORDER STATUS<select value={order.status} onChange={(event) => void update(order.orderNumber, event.target.value)} className="mt-2 block w-full border border-[#0b1830]/20 bg-white px-2 py-2 text-sm capitalize">{statuses.map((status) => <option key={status} value={status}>{status}</option>)}</select></label><p className="mt-4 text-xs text-[#68758a]">{new Date(order.createdAt).toLocaleString()}</p></div></article>)}</div>;
+}

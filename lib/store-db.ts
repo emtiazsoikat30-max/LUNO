@@ -91,3 +91,12 @@ export async function listStoreOrders(): Promise<StoreOrder[]> {
   `;
   return rows as StoreOrder[];
 }
+
+export async function updateStoreOrderStatus(orderNumber: string, status: StoreOrder["status"]) {
+  const allowed = ["pending", "processing", "shipped", "delivered", "cancelled"];
+  if (!allowed.includes(status)) throw new Error("Invalid order status");
+  const sql = sqlClient();
+  await ensureSchema();
+  const rows = await sql`UPDATE luno_orders SET status = ${status} WHERE order_number = ${orderNumber} RETURNING order_number AS "orderNumber", status`;
+  return rows[0] as { orderNumber: string; status: StoreOrder["status"] } | undefined;
+}

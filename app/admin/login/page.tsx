@@ -1,0 +1,2 @@
+import { AdminLoginForm } from "@/components/admin-login-form";
+export default function AdminLoginPage() { return <main className="min-h-screen bg-[#f4f5f7] px-5 py-16"><div className="mx-auto max-w-5xl"><p className="text-xs font-bold tracking-[.2em] text-[#b38b45]">LUNO · SECURE AREA</p><h1 className="mt-3 text-4xl font-bold text-[#09172e]">Admin sign in</h1><p className="mt-3 max-w-xl text-[#40506b]">Only authorised LUNO administrators can view customer orders, phone numbers and delivery addresses.</p><AdminLoginForm /></div></main>; }
