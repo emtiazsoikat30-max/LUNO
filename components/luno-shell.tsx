@@ -14,4 +14,17 @@ export function LunoShell({ title, eyebrow, children }: { title: string; eyebrow
   </main>;
 }
 
-export const categoryNames = ["Perfume", "Electronics & Gadgets", "Men's Fashion", "Women's Fashion", "Sunglasses", "Watches", "Bags", "Shoes", "Accessories", "More"];
+export const categoryCards = [
+  { name: "Perfume", slug: "perfume", image: "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=900&q=80" },
+  { name: "Electronics & Gadgets", slug: "electronics-and-gadgets", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80" },
+  { name: "Men's Fashion", slug: "mens-fashion", image: "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=900&q=80" },
+  { name: "Women's Fashion", slug: "womens-fashion", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80" },
+  { name: "Sunglasses", slug: "sunglasses", image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=900&q=80" },
+  { name: "Watches", slug: "watches", image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=900&q=80" },
+  { name: "Bags", slug: "bags", image: "https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=900&q=80" },
+  { name: "Shoes", slug: "shoes", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=80" },
+  { name: "Accessories", slug: "accessories", image: "https://images.unsplash.com/photo-1611085583191-a3b181a88401?auto=format&fit=crop&w=900&q=80" },
+  { name: "More", slug: "more", image: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=900&q=80" },
+] as const;
+
+export const categoryNames = categoryCards.map((category) => category.name);
