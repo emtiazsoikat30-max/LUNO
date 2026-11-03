@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { ProductSearch } from "@/components/product-search";
 
 export function LunoShell({ title, eyebrow, children }: { title: string; eyebrow: string; children: ReactNode }) {
   return <main className="min-h-screen bg-[#f4f5f7] text-[#0b1830]">
@@ -10,6 +11,7 @@ export function LunoShell({ title, eyebrow, children }: { title: string; eyebrow
       <div className="hidden gap-7 text-sm font-semibold md:flex"><Link href="/products">SHOP</Link><Link href="/categories">CATEGORIES</Link><Link href="/about">ABOUT</Link><Link href="/contact">CONTACT</Link></div>
       <div className="flex items-center gap-4 text-sm font-semibold"><Link href="/account">ACCOUNT</Link><Link href="/cart" className="rounded-full border border-[#0b1830]/20 px-4 py-2">BAG (0)</Link></div>
       </div>
+      <div className="flex justify-end"><ProductSearch /></div>
       <div className="mt-5 grid grid-cols-4 border-y border-[#0b1830]/10 py-3 text-center text-[10px] font-bold tracking-[.08em] md:hidden"><Link href="/products">SHOP</Link><Link href="/categories">CATEGORIES</Link><Link href="/about">ABOUT</Link><Link href="/contact">CONTACT</Link></div>
     </nav>
     <section className="mx-auto max-w-7xl px-5 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-10 lg:px-10"><p className="text-[10px] font-bold tracking-[.16em] text-[#b38b45] sm:text-xs sm:tracking-[.18em]">{eyebrow}</p><h1 className="mt-3 text-balance font-serif text-3xl leading-tight tracking-tight sm:mt-4 sm:text-5xl md:text-6xl">{title}</h1>{children}</section>

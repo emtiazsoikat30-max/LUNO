@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { categoryCards } from "@/components/luno-shell";
+import { ProductSearch } from "@/components/product-search";
 
 export default function Home() {
   return <main className="min-h-screen bg-[#f4f5f7] text-[#0b1830]">
@@ -10,6 +11,7 @@ export default function Home() {
       <div className="hidden gap-7 text-sm font-semibold md:flex"><Link href="/products">SHOP</Link><Link href="/categories">CATEGORIES</Link><Link href="/about">ABOUT</Link><Link href="/contact">CONTACT</Link></div>
       <div className="flex items-center gap-4 text-sm font-semibold"><Link href="/account">ACCOUNT</Link><Link href="/cart" className="rounded-full border border-[#0b1830]/20 px-4 py-2">BAG (0)</Link></div>
       </div>
+      <div className="flex justify-end"><ProductSearch /></div>
       <div className="mt-5 grid grid-cols-4 border-y border-[#0b1830]/10 py-3 text-center text-[10px] font-bold tracking-[.08em] md:hidden"><Link href="/products">SHOP</Link><Link href="/categories">CATEGORIES</Link><Link href="/about">ABOUT</Link><Link href="/contact">CONTACT</Link></div>
     </nav>
     <section className="mx-auto grid max-w-7xl gap-8 px-5 pb-12 pt-8 sm:gap-10 sm:px-6 sm:pb-16 sm:pt-10 lg:grid-cols-[1.1fr_.9fr] lg:px-10 lg:pt-20">
