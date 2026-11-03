@@ -2,6 +2,10 @@
 @import "tw-animate-css";
 @import "../vendor/shadcn-tailwind-4.13.0.css";
 
+/* The storefront does not render the large component-library demo set. Exclude
+   it from Tailwind's source scan so phones download only storefront styles. */
+@source not "../components/ui";
+
 @utility scrollbar-thin {
   scrollbar-width: thin;
 }
