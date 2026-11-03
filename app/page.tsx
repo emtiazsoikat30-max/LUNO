@@ -4,10 +4,13 @@ import { categoryCards } from "@/components/luno-shell";
 export default function Home() {
   return <main className="min-h-screen bg-[#f4f5f7] text-[#0b1830]">
     <div className="bg-[#09172e] px-5 py-2 text-center text-[11px] font-medium tracking-[.16em] text-[#f6ecd6]">LUNO · YOUR LIFESTYLE, OUR PRIORITY</div>
-    <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
+    <nav className="mx-auto max-w-7xl px-6 py-5 lg:px-10">
+      <div className="flex items-center justify-between">
       <Link href="/" className="text-2xl font-extrabold tracking-[.24em]">LUNO</Link>
       <div className="hidden gap-7 text-sm font-semibold md:flex"><Link href="/products">SHOP</Link><Link href="/categories">CATEGORIES</Link><Link href="/about">ABOUT</Link><Link href="/contact">CONTACT</Link></div>
       <div className="flex items-center gap-4 text-sm font-semibold"><Link href="/account">ACCOUNT</Link><Link href="/cart" className="rounded-full border border-[#0b1830]/20 px-4 py-2">BAG (0)</Link></div>
+      </div>
+      <div className="mt-5 grid grid-cols-4 border-y border-[#0b1830]/10 py-3 text-center text-[10px] font-bold tracking-[.08em] md:hidden"><Link href="/products">SHOP</Link><Link href="/categories">CATEGORIES</Link><Link href="/about">ABOUT</Link><Link href="/contact">CONTACT</Link></div>
     </nav>
     <section className="mx-auto grid max-w-7xl gap-10 px-6 pb-16 pt-10 lg:grid-cols-[1.1fr_.9fr] lg:px-10 lg:pt-20">
       <div className="flex flex-col justify-center"><p className="text-xs font-bold tracking-[.2em] text-[#b38b45]">CURATED EVERYDAY LUXURY</p><h1 className="mt-5 max-w-3xl font-serif text-5xl leading-[.95] tracking-tight md:text-7xl">A more considered way to <i>live.</i></h1><p className="mt-7 max-w-xl text-base leading-8 text-[#40506b]">Premium essentials across style, technology, fragrance and more—selected for every version of your day.</p><div className="mt-9 flex flex-wrap gap-3"><Link href="/products" className="bg-[#09172e] px-6 py-4 text-xs font-bold tracking-[.13em] text-white">SHOP ALL PRODUCTS →</Link><Link href="/categories" className="border border-[#0b1830]/30 px-6 py-4 text-xs font-bold tracking-[.13em]">EXPLORE CATEGORIES</Link></div></div>
