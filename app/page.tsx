@@ -6,7 +6,7 @@ export default function Home() {
     <div className="bg-[#09172e] px-5 py-2 text-center text-[11px] font-medium tracking-[.16em] text-[#f6ecd6]">LUNO · YOUR LIFESTYLE, OUR PRIORITY</div>
     <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
       <Link href="/" className="text-2xl font-extrabold tracking-[.24em]">LUNO</Link>
-      <div className="hidden gap-7 text-sm font-semibold md:flex"><Link href="/products">SHOP</Link><Link href="/categories">CATEGORIES</Link><Link href="/contact">CONTACT</Link></div>
+      <div className="hidden gap-7 text-sm font-semibold md:flex"><Link href="/products">SHOP</Link><Link href="/categories">CATEGORIES</Link><Link href="/about">ABOUT</Link><Link href="/contact">CONTACT</Link></div>
       <div className="flex items-center gap-4 text-sm font-semibold"><Link href="/account">ACCOUNT</Link><Link href="/cart" className="rounded-full border border-[#0b1830]/20 px-4 py-2">BAG (0)</Link></div>
     </nav>
     <section className="mx-auto grid max-w-7xl gap-10 px-6 pb-16 pt-10 lg:grid-cols-[1.1fr_.9fr] lg:px-10 lg:pt-20">
