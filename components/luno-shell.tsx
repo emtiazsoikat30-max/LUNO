@@ -12,7 +12,7 @@ export function LunoShell({ title, eyebrow, children }: { title: string; eyebrow
       </div>
       <div className="mt-5 grid grid-cols-4 border-y border-[#0b1830]/10 py-3 text-center text-[10px] font-bold tracking-[.08em] md:hidden"><Link href="/products">SHOP</Link><Link href="/categories">CATEGORIES</Link><Link href="/about">ABOUT</Link><Link href="/contact">CONTACT</Link></div>
     </nav>
-    <section className="mx-auto max-w-7xl px-6 pb-20 pt-10 lg:px-10"><p className="text-xs font-bold tracking-[.18em] text-[#b38b45]">{eyebrow}</p><h1 className="mt-4 font-serif text-5xl tracking-tight md:text-6xl">{title}</h1>{children}</section>
+    <section className="mx-auto max-w-7xl px-5 pb-16 pt-8 sm:px-6 sm:pb-20 sm:pt-10 lg:px-10"><p className="text-[10px] font-bold tracking-[.16em] text-[#b38b45] sm:text-xs sm:tracking-[.18em]">{eyebrow}</p><h1 className="mt-3 text-balance font-serif text-3xl leading-tight tracking-tight sm:mt-4 sm:text-5xl md:text-6xl">{title}</h1>{children}</section>
     <footer className="bg-[#09172e] px-6 py-9 text-center text-xs tracking-[.12em] text-[#f6ecd6]">© 2026 LUNO · DHAKA, BANGLADESH</footer>
   </main>;
 }
