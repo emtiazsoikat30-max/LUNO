@@ -12,7 +12,7 @@ export type StoreOrder = {
   phone: string;
   address: string;
   paymentMethod: "cod";
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
+  status: "pending" | "reviewed" | "received" | "delivered" | "cancelled";
   cancellationReason?: string | null;
   createdAt: string;
 };
@@ -113,10 +113,16 @@ export async function cancelCustomerOrder(customerSessionId: string, orderNumber
 }
 
 export async function updateStoreOrderStatus(orderNumber: string, status: StoreOrder["status"]) {
-  const allowed = ["pending", "processing", "shipped", "delivered", "cancelled"];
+  const allowed = ["pending", "reviewed", "received", "delivered", "cancelled"];
   if (!allowed.includes(status)) throw new Error("Invalid order status");
   const sql = sqlClient();
   await ensureSchema();
   const rows = await sql`UPDATE luno_orders SET status = ${status} WHERE order_number = ${orderNumber} RETURNING order_number AS "orderNumber", status`;
   return rows[0] as { orderNumber: string; status: StoreOrder["status"] } | undefined;
+}
+
+export async function deleteStoreOrder(orderNumber: string) {
+  const sql = sqlClient(); await ensureSchema();
+  const rows = await sql`DELETE FROM luno_orders WHERE order_number = ${orderNumber} RETURNING order_number AS "orderNumber"`;
+  return rows[0] as { orderNumber: string } | undefined;
 }
