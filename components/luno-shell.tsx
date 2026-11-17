@@ -22,7 +22,7 @@ export function LunoShell({ title, eyebrow, children }: { title: string; eyebrow
 
 export const categoryCards = [
   { name: "Perfume", slug: "perfume", image: "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=900&q=80" },
-  { name: "Electronics & Gadgets", slug: "electronics-and-gadgets", image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?auto=format&fit=crop&w=900&q=80" },
+  { name: "Electronics & Gadgets", slug: "electronics-and-gadgets", image: "/electronics-gadgets-category.png" },
   { name: "Men's Fashion", slug: "mens-fashion", image: "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=900&q=80" },
   { name: "Women's Fashion", slug: "womens-fashion", image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=900&q=80" },
   { name: "Sunglasses", slug: "sunglasses", image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=900&q=80" },
