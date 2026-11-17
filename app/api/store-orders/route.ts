@@ -7,20 +7,22 @@ const bangladeshMobile = /^(?:\+?88)?01[3-9]\d{8}$/;
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as { slug?: string; name?: string; phone?: string; districtId?: string; upazilaId?: string; address?: string };
+    const body = (await request.json()) as { slug?: string; name?: string; phone?: string; districtId?: string; upazilaId?: string; address?: string; quantity?: number };
     const slug = body.slug?.trim();
     const name = body.name?.trim();
     const phone = body.phone?.trim();
     const district = body.districtId ? findDistrict(body.districtId) : undefined;
     const upazila = body.upazilaId && district ? findUpazila(body.upazilaId, district.id) : undefined;
     const address = body.address?.trim();
-    if (!slug || !name || name.length > 100 || !phone || !bangladeshMobile.test(phone.replace(/[\s-]/g, "")) || !district || !upazila || !address || address.length > 500) {
+    const quantity = body.quantity ?? 1;
+    if (!slug || !name || name.length > 100 || !phone || !bangladeshMobile.test(phone.replace(/[\s-]/g, "")) || !district || !upazila || !address || address.length > 500 || !Number.isInteger(quantity) || quantity < 1 || quantity > 10) {
       return NextResponse.json({ error: "Please enter valid delivery details." }, { status: 400 });
     }
     const existingSession = await currentCustomerSession();
     const session = existingSession ? undefined : createCustomerSession();
     const order = await createStoreOrder({
-      slug, name, phone, address, customerSessionId: existingSession ?? session!.id,
+      slug, name, phone, address, quantity, customerSessionId: existingSession ?? session!.id,
+      districtEnglishName: district.en,
       district: formatBangladeshLocation(district), upazila: formatBangladeshLocation(upazila),
     });
     const response = NextResponse.json(order, { status: 201 });

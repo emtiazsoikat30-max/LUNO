@@ -5,6 +5,7 @@ import { CatalogProduct, formatBdt } from "@/lib/catalog";
 import Link from "next/link";
 import { bangladeshDistricts, bangladeshUpazilas } from "@/lib/bangladesh-locations";
 import { LocationSearchSelect } from "@/components/location-search-select";
+import { calculateOrderPricing } from "@/lib/order-pricing";
 
 export function BuyNowForm({ product }: { product: CatalogProduct }) {
   const [open, setOpen] = useState(false);
@@ -14,7 +15,10 @@ export function BuyNowForm({ product }: { product: CatalogProduct }) {
   const [saving, setSaving] = useState(false);
   const [districtId, setDistrictId] = useState("");
   const [upazilaId, setUpazilaId] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const upazilas = useMemo(() => bangladeshUpazilas.filter((upazila) => upazila.districtId === districtId), [districtId]);
+  const district = useMemo(() => bangladeshDistricts.find((item) => item.id === districtId), [districtId]);
+  const pricing = useMemo(() => district ? calculateOrderPricing(product.priceBdt, quantity, district.en) : undefined, [district, product.priceBdt, quantity]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -32,6 +36,7 @@ export function BuyNowForm({ product }: { product: CatalogProduct }) {
           phone: form.get("phone"),
           districtId,
           upazilaId,
+          quantity,
           address: form.get("address"),
         }),
       });
@@ -52,8 +57,10 @@ export function BuyNowForm({ product }: { product: CatalogProduct }) {
     <p className="text-xs font-bold tracking-[.14em] text-[#b38b45]">BUY NOW · {formatBdt(product.priceBdt)}</p><h2 className="mt-2 text-xl font-bold">Delivery details</h2><p className="mt-2 text-sm leading-6 text-[#40506b]">Enter your delivery details to order {product.name}.</p>
     <label className="mt-5 block text-sm font-semibold">Full name <span className="text-red-700" aria-hidden="true">*</span><input required name="name" autoComplete="name" placeholder="Your full name" maxLength={100} className="mt-2 w-full border border-[#0b1830]/20 bg-white px-3 py-3 outline-none placeholder:text-[#68758a] focus:border-[#b38b45] focus:ring-2 focus:ring-[#b38b45]/20" /></label>
     <label className="mt-4 block text-sm font-semibold">Mobile number <span className="text-red-700" aria-hidden="true">*</span><input required name="phone" type="tel" inputMode="numeric" autoComplete="tel" placeholder="01XXXXXXXXX" pattern="(?:\\+?88)?01[3-9][0-9]{8}" title="Enter a valid Bangladesh mobile number, for example 01712345678" className="mt-2 w-full border border-[#0b1830]/20 bg-white px-3 py-3 outline-none placeholder:text-[#68758a] focus:border-[#b38b45] focus:ring-2 focus:ring-[#b38b45]/20" /><span className="mt-1 block text-xs font-normal text-[#68758a]">Example: 01712345678</span></label>
+    <label className="mt-4 block max-w-44 text-sm font-semibold">Quantity <select value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} className="mt-2 w-full border border-[#0b1830]/20 bg-white px-3 py-3 outline-none focus:border-[#b38b45] focus:ring-2 focus:ring-[#b38b45]/20">{Array.from({ length: 10 }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
     <div className="mt-4 grid gap-4 sm:grid-cols-2"><LocationSearchSelect label="District" placeholder="Search district" searchPlaceholder="Type to search all 64 districts" options={bangladeshDistricts} value={districtId} onChange={(id) => { setDistrictId(id); setUpazilaId(""); }} required emptyText="No matching district found." /><LocationSearchSelect label="Thana / Upazila" placeholder="Search thana or upazila" searchPlaceholder="Type to search in the selected district" options={upazilas} value={upazilaId} onChange={setUpazilaId} disabled={!districtId} required emptyText="No matching thana / upazila found." /></div>
     <label className="mt-4 block text-sm font-semibold">Full delivery address <span className="text-red-700" aria-hidden="true">*</span><textarea required name="address" rows={4} maxLength={500} autoComplete="street-address" placeholder="Village, house number, road, area, market or landmark" className="mt-2 w-full resize-y border border-[#0b1830]/20 bg-white px-3 py-3 outline-none placeholder:text-[#68758a] focus:border-[#b38b45] focus:ring-2 focus:ring-[#b38b45]/20" /></label>
+    <section aria-live="polite" className="mt-5 border border-[#0b1830]/15 bg-white p-4 text-sm text-[#243554]"><p className="text-xs font-bold tracking-[.12em] text-[#b38b45]">ORDER SUMMARY</p>{pricing ? <><p className="mt-3 flex justify-between gap-4"><span>Product subtotal</span><b>৳{pricing.productSubtotalBdt.toLocaleString("en-BD")}</b></p><p className="mt-2 flex justify-between gap-4"><span>Delivery charge <span className="text-xs text-[#68758a]">({pricing.deliveryArea === "inside_dhaka" ? "Inside Dhaka" : "Outside Dhaka"})</span></span><b>৳{pricing.deliveryChargeBdt.toLocaleString("en-BD")}</b></p><p className="mt-2 flex justify-between gap-4"><span>Discount</span><b>৳{pricing.discountBdt.toLocaleString("en-BD")}</b></p><p className="mt-3 flex justify-between gap-4 border-t border-[#0b1830]/15 pt-3 text-base font-bold text-[#09172e]"><span>Grand total</span><span>৳{pricing.totalPayableBdt.toLocaleString("en-BD")}</span></p></> : <p className="mt-3 leading-6 text-[#68758a]">Select your district to view the delivery charge and grand total.</p>}</section>
     {error && <p role="alert" className="mt-4 border border-red-300 bg-red-50 p-3 text-sm text-red-800">{error}</p>}<button disabled={saving} className="mt-5 w-full bg-[#09172e] px-5 py-4 text-xs font-bold tracking-[.13em] text-white disabled:opacity-60">{saving ? "SAVING ORDER…" : "CONFIRM ORDER →"}</button><button type="button" onClick={() => setOpen(false)} className="mt-4 text-xs font-bold tracking-[.12em] text-[#40506b]">CANCEL</button>
   </form>;
 }
