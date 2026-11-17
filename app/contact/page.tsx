@@ -1,7 +1,7 @@
 import { LunoShell } from "@/components/luno-shell";
 
 export default function ContactPage() {
-  return <LunoShell eyebrow="WE'RE HERE TO HELP" title="Contact LUNO.">
+  return <LunoShell eyebrow="WE'RE HERE TO HELP" title="Contact TALBETAL.">
     <div className="mt-10 max-w-2xl border border-[#0b1830]/10 bg-[#fffdf8] p-8">
       <p className="leading-7 text-[#40506b]">For product, order and delivery support, message us directly on WhatsApp.</p>
       <a href="https://wa.me/8801868589120" target="_blank" rel="noreferrer" className="mt-7 inline-flex items-center gap-3 bg-[#25D366] px-5 py-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#1eae55]">

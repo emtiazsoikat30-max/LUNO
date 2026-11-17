@@ -78,7 +78,7 @@ export async function createStoreOrder(input: {
   if (!product) throw new Error("The selected product is unavailable");
   const sql = sqlClient();
   await ensureSchema();
-  const orderNumber = `LUNO-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().slice(0, 5).toUpperCase()}`;
+  const orderNumber = `TALBETAL-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().slice(0, 5).toUpperCase()}`;
   const rows = await sql`
     INSERT INTO luno_orders (
       order_number, product_slug, product_name, product_image, unit_price_bdt,

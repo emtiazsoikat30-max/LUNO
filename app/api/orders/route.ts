@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     if (lines.some((line) => line.quantity > line.product.stock)) return NextResponse.json({ error: "Insufficient stock for one or more products" }, { status: 409 });
     const subtotal = lines.reduce((total, line) => total + line.product.priceBdt * line.quantity, 0);
     const now = new Date().toISOString();
-    const orderNumber = `LUNO-${Date.now().toString(36).toUpperCase()}-${crypto.getRandomValues(new Uint16Array(1))[0].toString(36).toUpperCase()}`;
+    const orderNumber = `TALBETAL-${Date.now().toString(36).toUpperCase()}-${crypto.getRandomValues(new Uint16Array(1))[0].toString(36).toUpperCase()}`;
     await db.prepare("INSERT INTO customers (auth_user_id, email, full_name, created_at, updated_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(auth_user_id) DO UPDATE SET email=excluded.email, full_name=excluded.full_name, updated_at=excluded.updated_at")
       .bind(user.userId, user.email, user.fullName, now, now).run();
     await db.prepare("INSERT INTO orders (order_number, customer_auth_user_id, customer_name, customer_email, phone, shipping_address, payment_method, subtotal_bdt, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")

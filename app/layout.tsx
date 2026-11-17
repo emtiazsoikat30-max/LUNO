@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LUNO — Your lifestyle, our priority",
-  description: "Premium lifestyle essentials from LUNO.",
+  title: "TALBETAL — Trends & Gadgets",
+  description: "Trends, gadgets and everyday essentials from TALBETAL.",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: "/talbetal-logo.jpeg",
+    shortcut: "/talbetal-logo.jpeg",
   },
 };
 
