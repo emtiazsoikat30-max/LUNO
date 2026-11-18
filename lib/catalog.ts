@@ -8,6 +8,9 @@ export type CatalogProduct = {
   fullDescription?: string;
   features?: string[];
   sku?: string;
+  discountPriceBdt?: number | null;
+  stockQuantity?: number;
+  active?: boolean;
 };
 
 export const catalog: CatalogProduct[] = [

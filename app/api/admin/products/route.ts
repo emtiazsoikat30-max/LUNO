@@ -1,32 +1,25 @@
-import { platformEnv as env } from "@/lib/platform-env";
 import { NextResponse } from "next/server";
-import { AuthorizationError, requireAdmin } from "@/lib/authorization";
+import { isAdminSession } from "@/lib/admin-auth";
+import { listCatalogProducts, saveCatalogProduct } from "@/lib/store-db";
+
+const categories = new Set(["perfume", "electronics-and-gadgets", "mens-fashion", "womens-fashion", "sunglasses", "watches", "bags", "shoes", "accessories", "more"]);
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  try {
-    await requireAdmin();
-    const db = env.DB; if (!db) return NextResponse.json({ error: "Store database is not configured" }, { status: 503 });
-    const { results } = await db.prepare("SELECT id, name, slug, price_bdt AS priceBdt, stock, is_active AS isActive FROM products ORDER BY id DESC").all();
-    return NextResponse.json({ products: results });
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof AuthorizationError ? error.message : "Unable to load products" }, { status: error instanceof AuthorizationError ? 403 : 500 });
-  }
+  if (!(await isAdminSession())) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
+  return NextResponse.json({ products: await listCatalogProducts(true) }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(request: Request) {
+  if (!(await isAdminSession())) return NextResponse.json({ error: "Unauthorised" }, { status: 401 });
   try {
-    await requireAdmin();
-    const db = env.DB; if (!db) return NextResponse.json({ error: "Store database is not configured" }, { status: 503 });
-    const data = await request.json() as { name?: string; slug?: string; description?: string; priceBdt?: number; stock?: number; categoryId?: number; imageUrl?: string };
-    const priceBdt = data.priceBdt; const stock = data.stock;
-    if (!data.name?.trim() || !/^[a-z0-9-]+$/.test(data.slug ?? "") || typeof priceBdt !== "number" || !Number.isInteger(priceBdt) || priceBdt < 0 || typeof stock !== "number" || !Number.isInteger(stock) || stock < 0) {
-      return NextResponse.json({ error: "Invalid product data" }, { status: 400 });
-    }
-    const now = new Date().toISOString();
-    const result = await db.prepare("INSERT INTO products (category_id, slug, name, description, price_bdt, stock, image_url, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
-      .bind(data.categoryId ?? null, data.slug, data.name.trim(), data.description?.trim() ?? "", priceBdt, stock, data.imageUrl?.trim() ?? null, now, now).run();
-    return NextResponse.json({ id: result.meta.last_row_id }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof AuthorizationError ? error.message : "Unable to add product" }, { status: error instanceof AuthorizationError ? 403 : 500 });
+    const data = await request.json() as Record<string, unknown>;
+    const name = typeof data.name === "string" ? data.name.trim() : ""; const slug = typeof data.slug === "string" ? data.slug.trim() : ""; const category = typeof data.category === "string" ? data.category : ""; const image = typeof data.image === "string" ? data.image.trim() : ""; const description = typeof data.description === "string" ? data.description.trim() : ""; const fullDescription = typeof data.fullDescription === "string" ? data.fullDescription.trim() : ""; const priceBdt = data.priceBdt; const discountPriceBdt = data.discountPriceBdt; const stockQuantity = data.stockQuantity; const features = Array.isArray(data.features) ? data.features.filter((item): item is string => typeof item === "string").map((item) => item.trim()).filter(Boolean) : []; const sku = typeof data.sku === "string" ? data.sku.trim() : ""; const active = typeof data.active === "boolean" ? data.active : true;
+    const validNumber = (value: unknown) => typeof value === "number" && Number.isInteger(value) && value >= 0;
+    if (!name || name.length > 160 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !categories.has(category) || !image || image.length > 4_000_000 || !description || description.length > 500 || fullDescription.length > 5000 || !validNumber(priceBdt) || (discountPriceBdt !== null && discountPriceBdt !== undefined && (!validNumber(discountPriceBdt) || discountPriceBdt > priceBdt)) || !validNumber(stockQuantity) || stockQuantity > 1_000_000 || sku.length > 100) return NextResponse.json({ error: "Please enter valid product details. Discount price cannot exceed regular price." }, { status: 400 });
+    const product = await saveCatalogProduct({ slug, name, category, priceBdt, discountPriceBdt: discountPriceBdt == null ? null : discountPriceBdt, image, description, fullDescription: fullDescription || undefined, features, stockQuantity, sku: sku || undefined, active });
+    return NextResponse.json({ product }, { status: 201 });
+  } catch {
+    return NextResponse.json({ error: "Unable to save product" }, { status: 500 });
   }
 }

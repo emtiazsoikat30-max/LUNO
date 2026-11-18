@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 import { LunoShell } from "@/components/luno-shell";
-import { catalog, formatBdt } from "@/lib/catalog";
+import { formatBdt } from "@/lib/catalog";
+import { getCatalogProductBySlug, listCatalogProducts } from "@/lib/store-db";
 import { BuyNowForm } from "@/components/buy-now-form";
 import { ProductCard } from "@/components/product-card";
 
 export default async function ProductDetail({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params; const product = catalog.find(item => item.slug === slug); if (!product) notFound();
-  const related = catalog.filter((item) => item.category === product.category && item.slug !== product.slug).slice(0, 4);
+  const { slug } = await params; const product = await getCatalogProductBySlug(slug); if (!product) notFound();
+  const related = (await listCatalogProducts()).filter((item) => item.category === product.category && item.slug !== product.slug).slice(0, 4);
   return <LunoShell eyebrow={product.category.replaceAll("-", " ").toUpperCase()} title={product.name}>
     <div className="mt-8 grid gap-8 sm:mt-10 sm:gap-10 lg:grid-cols-2">
       <div className="border border-[#0b1830]/10 bg-white p-3 sm:p-5"><img src={product.image} alt={product.name} loading="lazy" decoding="async" className="h-80 w-full object-contain sm:h-[540px]" /></div>

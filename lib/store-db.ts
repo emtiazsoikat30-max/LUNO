@@ -1,5 +1,5 @@
 import { neon } from "@neondatabase/serverless";
-import { getProductBySlug } from "@/lib/catalog";
+import { catalog, type CatalogProduct } from "@/lib/catalog";
 import { calculateOrderPricing, type OrderPricing } from "@/lib/order-pricing";
 
 export type StoreOrder = {
@@ -81,6 +81,28 @@ async function ensureSchema() {
       await sql`ALTER TABLE luno_orders ADD COLUMN IF NOT EXISTS delivery_area TEXT`;
       await sql`CREATE INDEX IF NOT EXISTS luno_orders_created_at_idx ON luno_orders (created_at DESC)`;
       await sql`CREATE INDEX IF NOT EXISTS luno_orders_customer_session_idx ON luno_orders (customer_session_id, created_at DESC)`;
+      await sql`CREATE TABLE IF NOT EXISTS luno_products (
+        slug TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        category TEXT NOT NULL,
+        price_bdt INTEGER NOT NULL CHECK (price_bdt >= 0),
+        discount_price_bdt INTEGER CHECK (discount_price_bdt IS NULL OR discount_price_bdt >= 0),
+        image TEXT NOT NULL,
+        short_description TEXT NOT NULL,
+        full_description TEXT,
+        features JSONB NOT NULL DEFAULT '[]'::jsonb,
+        stock_quantity INTEGER NOT NULL DEFAULT 0 CHECK (stock_quantity >= 0),
+        sku TEXT,
+        active BOOLEAN NOT NULL DEFAULT TRUE,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`;
+      await sql`CREATE INDEX IF NOT EXISTS luno_products_category_active_idx ON luno_products (category, active)`;
+      for (const product of catalog) {
+        await sql`INSERT INTO luno_products (slug, name, category, price_bdt, discount_price_bdt, image, short_description, full_description, features, stock_quantity, sku, active)
+          VALUES (${product.slug}, ${product.name}, ${product.category}, ${product.priceBdt}, ${product.discountPriceBdt ?? null}, ${product.image}, ${product.description}, ${product.fullDescription ?? null}, ${JSON.stringify(product.features ?? [])}::jsonb, ${product.stockQuantity ?? 100}, ${product.sku ?? null}, ${product.active ?? true})
+          ON CONFLICT (slug) DO NOTHING`;
+      }
       await sql`CREATE TABLE IF NOT EXISTS luno_visitor_sessions (
         visitor_id TEXT PRIMARY KEY,
         first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -90,6 +112,37 @@ async function ensureSchema() {
     })();
   }
   return schemaPromise;
+}
+
+function rowToProduct(row: Record<string, unknown>): CatalogProduct {
+  const features = typeof row.features === "string" ? JSON.parse(row.features) : row.features;
+  return { slug: String(row.slug), name: String(row.name), category: String(row.category), priceBdt: Number(row.priceBdt), discountPriceBdt: row.discountPriceBdt == null ? null : Number(row.discountPriceBdt), image: String(row.image), description: String(row.shortDescription), fullDescription: row.fullDescription == null ? undefined : String(row.fullDescription), features: Array.isArray(features) ? features.filter((item): item is string => typeof item === "string") : [], stockQuantity: Number(row.stockQuantity ?? 0), sku: row.sku == null ? undefined : String(row.sku), active: Boolean(row.active) };
+}
+
+const productSelect = `slug, name, category, price_bdt AS "priceBdt", discount_price_bdt AS "discountPriceBdt", image, short_description AS "shortDescription", full_description AS "fullDescription", features, stock_quantity AS "stockQuantity", sku, active`;
+
+export async function listCatalogProducts(includeInactive = false): Promise<CatalogProduct[]> {
+  try {
+    const sql = sqlClient(); await ensureSchema();
+    const rows = includeInactive ? await sql.query(`SELECT ${productSelect} FROM luno_products ORDER BY created_at DESC`) : await sql.query(`SELECT ${productSelect} FROM luno_products WHERE active = TRUE ORDER BY created_at DESC`);
+    return rows.map((row) => rowToProduct(row as Record<string, unknown>));
+  } catch { return includeInactive ? catalog : catalog.filter((product) => product.active !== false); }
+}
+
+export async function getCatalogProductBySlug(slug: string, includeInactive = false): Promise<CatalogProduct | undefined> {
+  const products = await listCatalogProducts(includeInactive);
+  return products.find((product) => product.slug === slug);
+}
+
+export type AdminProductInput = Omit<CatalogProduct, "slug"> & { slug: string };
+
+export async function saveCatalogProduct(input: AdminProductInput) {
+  const sql = sqlClient(); await ensureSchema();
+  const rows = await sql`INSERT INTO luno_products (slug, name, category, price_bdt, discount_price_bdt, image, short_description, full_description, features, stock_quantity, sku, active, updated_at)
+    VALUES (${input.slug}, ${input.name}, ${input.category}, ${input.priceBdt}, ${input.discountPriceBdt ?? null}, ${input.image}, ${input.description}, ${input.fullDescription ?? null}, ${JSON.stringify(input.features ?? [])}::jsonb, ${input.stockQuantity ?? 0}, ${input.sku ?? null}, ${input.active !== false}, NOW())
+    ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, category = EXCLUDED.category, price_bdt = EXCLUDED.price_bdt, discount_price_bdt = EXCLUDED.discount_price_bdt, image = EXCLUDED.image, short_description = EXCLUDED.short_description, full_description = EXCLUDED.full_description, features = EXCLUDED.features, stock_quantity = EXCLUDED.stock_quantity, sku = EXCLUDED.sku, active = EXCLUDED.active, updated_at = NOW()
+    RETURNING slug, name, category, price_bdt AS "priceBdt", discount_price_bdt AS "discountPriceBdt", image, short_description AS "shortDescription", full_description AS "fullDescription", features, stock_quantity AS "stockQuantity", sku, active`;
+  return rowToProduct(rows[0] as Record<string, unknown>);
 }
 
 export async function recordVisitor(visitorId: string) {
@@ -127,7 +180,7 @@ export async function createStoreOrder(input: {
   quantity: number;
   customerSessionId: string;
 }) {
-  const product = getProductBySlug(input.slug);
+  const product = await getCatalogProductBySlug(input.slug);
   if (!product) throw new Error("The selected product is unavailable");
   if (!Number.isInteger(input.quantity) || input.quantity < 1 || input.quantity > 10) throw new Error("Invalid quantity");
   const pricing = calculateOrderPricing(product.priceBdt, input.quantity, input.districtEnglishName);
