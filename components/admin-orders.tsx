@@ -6,7 +6,7 @@ const style: Record<string, string> = { pending: "bg-[#09172e] text-white", revi
 export function AdminOrders() {
   const [orders, setOrders] = useState<Order[]>([]); const [error, setError] = useState(""); const [loading, setLoading] = useState(true); const [view, setView] = useState<"active" | "cancelled">("active");
   async function load() { const response = await fetch("/api/admin/store-orders", { cache: "no-store" }); if (!response.ok) { setError("Could not load orders."); setLoading(false); return; } const body = await response.json() as { orders: Order[] }; setOrders(body.orders); setLoading(false); }
-  useEffect(() => { void load(); }, []);
+  useEffect(() => { const timer = window.setTimeout(() => void load(), 0); return () => window.clearTimeout(timer); }, []);
   async function update(orderNumber: string, status: string) { const response = await fetch("/api/admin/store-orders", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderNumber, status }) }); if (!response.ok) { setError("Status update failed."); return; } setOrders((items) => items.map((item) => item.orderNumber === orderNumber ? { ...item, status } : item)); }
   async function remove(orderNumber: string) { if (!window.confirm("Delete this order permanently? This cannot be undone.")) return; const response = await fetch("/api/admin/store-orders", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ orderNumber }) }); if (!response.ok) { setError("Order could not be deleted."); return; } setOrders((items) => items.filter((item) => item.orderNumber !== orderNumber)); }
   if (loading) return <p className="mt-8 text-sm text-[#40506b]">Loading secure order records…</p>;

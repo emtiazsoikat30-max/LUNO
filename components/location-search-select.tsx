@@ -34,11 +34,6 @@ export function LocationSearchSelect({ label, placeholder, searchPlaceholder, op
   }, [options, query]);
 
   useEffect(() => {
-    setQuery("");
-    setActive(0);
-  }, [value, options]);
-
-  useEffect(() => {
     function close(event: MouseEvent) {
       if (!root.current?.contains(event.target as Node)) setOpen(false);
     }
