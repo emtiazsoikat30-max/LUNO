@@ -2,7 +2,7 @@
 
 import Script from "next/script";
 import { useEffect } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "2419577928857122";
 
@@ -12,8 +12,7 @@ declare global {
 
 export function MetaPixel() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  useEffect(() => { if (typeof window.fbq === "function") window.fbq("track", "PageView"); }, [pathname, searchParams]);
+  useEffect(() => { if (typeof window.fbq === "function") window.fbq("track", "PageView"); }, [pathname]);
   if (!pixelId) return null;
   return <>
     <Script id="meta-pixel" strategy="afterInteractive">{`
