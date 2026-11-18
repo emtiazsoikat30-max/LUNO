@@ -125,7 +125,7 @@ const productSelect = `slug, name, category, price_bdt AS "priceBdt", discount_p
 export async function listCatalogProducts(includeInactive = false): Promise<CatalogProduct[]> {
   try {
     if (catalogCache && catalogCache.expiresAt > Date.now()) return includeInactive ? catalogCache.products : catalogCache.products.filter((product) => product.active !== false);
-    const sql = sqlClient(); await ensureSchema();
+    const sql = sqlClient();
     const rows = await sql.query(`SELECT ${productSelect} FROM luno_products ORDER BY created_at DESC`);
     const products = rows.map((row) => rowToProduct(row as Record<string, unknown>));
     catalogCache = { products, expiresAt: Date.now() + 60_000 };

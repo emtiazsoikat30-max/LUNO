@@ -21,8 +21,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function ProductDetail({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params; const product = await getCatalogProductBySlug(slug); if (!product) notFound();
-  const related = (await listCatalogProducts()).filter((item) => item.category === product.category && item.slug !== product.slug).slice(0, 4);
+  const { slug } = await params;
+  const catalog = await listCatalogProducts();
+  const product = catalog.find((item) => item.slug === slug); if (!product) notFound();
+  const related = catalog.filter((item) => item.category === product.category && item.slug !== product.slug).slice(0, 4);
   const salePrice = sellingPriceBdt(product);
   const imageUrl = product.image.startsWith("http") ? product.image : `${siteUrl}${product.image}`;
   const productJsonLd = { "@context": "https://schema.org", "@type": "Product", name: product.name, image: [imageUrl], description: product.fullDescription ?? product.description, sku: product.sku, category: product.category.replaceAll("-", " "), offers: { "@type": "Offer", priceCurrency: "BDT", price: salePrice, availability: product.stockQuantity === 0 ? "https://schema.org/OutOfStock" : "https://schema.org/InStock", url: `${siteUrl}/products/${product.slug}` } };
