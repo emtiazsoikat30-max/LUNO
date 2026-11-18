@@ -7,6 +7,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json() as { visitorId?: unknown };
     if (typeof body.visitorId !== "string") return NextResponse.json({ error: "Invalid visitor" }, { status: 400 });
+    if (!/^[a-zA-Z0-9_-]{16,128}$/.test(body.visitorId)) return NextResponse.json({ error: "Invalid visitor" }, { status: 400 });
     await recordVisitor(body.visitorId);
     return new NextResponse(null, { status: 204 });
   } catch {
