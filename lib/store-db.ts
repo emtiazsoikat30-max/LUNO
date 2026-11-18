@@ -117,7 +117,10 @@ async function ensureSchema() {
 
 function rowToProduct(row: Record<string, unknown>): CatalogProduct {
   const features = typeof row.features === "string" ? JSON.parse(row.features) : row.features;
-  return { slug: String(row.slug), name: String(row.name), category: String(row.category), priceBdt: Number(row.priceBdt), discountPriceBdt: row.discountPriceBdt == null ? null : Number(row.discountPriceBdt), image: String(row.image), description: String(row.shortDescription), fullDescription: row.fullDescription == null ? undefined : String(row.fullDescription), features: Array.isArray(features) ? features.filter((item): item is string => typeof item === "string") : [], stockQuantity: Number(row.stockQuantity ?? 0), sku: row.sku == null ? undefined : String(row.sku), active: Boolean(row.active) };
+  const slug = String(row.slug);
+  const sourceImage = String(row.image);
+  const image = sourceImage.startsWith("data:image/") ? `/api/product-images/${encodeURIComponent(slug)}` : sourceImage;
+  return { slug, name: String(row.name), category: String(row.category), priceBdt: Number(row.priceBdt), discountPriceBdt: row.discountPriceBdt == null ? null : Number(row.discountPriceBdt), image, description: String(row.shortDescription), fullDescription: row.fullDescription == null ? undefined : String(row.fullDescription), features: Array.isArray(features) ? features.filter((item): item is string => typeof item === "string") : [], stockQuantity: Number(row.stockQuantity ?? 0), sku: row.sku == null ? undefined : String(row.sku), active: Boolean(row.active) };
 }
 
 const productSelect = `slug, name, category, price_bdt AS "priceBdt", discount_price_bdt AS "discountPriceBdt", image, short_description AS "shortDescription", full_description AS "fullDescription", features, stock_quantity AS "stockQuantity", sku, active`;
@@ -142,12 +145,26 @@ export type AdminProductInput = Omit<CatalogProduct, "slug"> & { slug: string };
 
 export async function saveCatalogProduct(input: AdminProductInput) {
   const sql = sqlClient(); await ensureSchema();
+  let image = input.image;
+  if (image === `/api/product-images/${encodeURIComponent(input.slug)}`) {
+    const existing = await sql`SELECT image FROM luno_products WHERE slug = ${input.slug}`;
+    if (existing[0]?.image && typeof existing[0].image === "string") image = existing[0].image;
+  }
   const rows = await sql`INSERT INTO luno_products (slug, name, category, price_bdt, discount_price_bdt, image, short_description, full_description, features, stock_quantity, sku, active, updated_at)
-    VALUES (${input.slug}, ${input.name}, ${input.category}, ${input.priceBdt}, ${input.discountPriceBdt ?? null}, ${input.image}, ${input.description}, ${input.fullDescription ?? null}, ${JSON.stringify(input.features ?? [])}::jsonb, ${input.stockQuantity ?? 0}, ${input.sku ?? null}, ${input.active !== false}, NOW())
+    VALUES (${input.slug}, ${input.name}, ${input.category}, ${input.priceBdt}, ${input.discountPriceBdt ?? null}, ${image}, ${input.description}, ${input.fullDescription ?? null}, ${JSON.stringify(input.features ?? [])}::jsonb, ${input.stockQuantity ?? 0}, ${input.sku ?? null}, ${input.active !== false}, NOW())
     ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, category = EXCLUDED.category, price_bdt = EXCLUDED.price_bdt, discount_price_bdt = EXCLUDED.discount_price_bdt, image = EXCLUDED.image, short_description = EXCLUDED.short_description, full_description = EXCLUDED.full_description, features = EXCLUDED.features, stock_quantity = EXCLUDED.stock_quantity, sku = EXCLUDED.sku, active = EXCLUDED.active, updated_at = NOW()
     RETURNING slug, name, category, price_bdt AS "priceBdt", discount_price_bdt AS "discountPriceBdt", image, short_description AS "shortDescription", full_description AS "fullDescription", features, stock_quantity AS "stockQuantity", sku, active`;
   catalogCache = undefined;
   return rowToProduct(rows[0] as Record<string, unknown>);
+}
+
+export async function getCatalogProductImage(slug: string) {
+  try {
+    const sql = sqlClient();
+    const rows = await sql`SELECT image FROM luno_products WHERE slug = ${slug} AND active = TRUE`;
+    if (typeof rows[0]?.image === "string") return rows[0].image;
+  } catch { /* use the original catalog asset below */ }
+  return catalog.find((product) => product.slug === slug && product.active !== false)?.image;
 }
 
 export async function recordVisitor(visitorId: string) {
