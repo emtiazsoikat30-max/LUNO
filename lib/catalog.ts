@@ -5,6 +5,9 @@ export type CatalogProduct = {
   priceBdt: number;
   image: string;
   description: string;
+  fullDescription?: string;
+  features?: string[];
+  sku?: string;
 };
 
 export const catalog: CatalogProduct[] = [
@@ -12,6 +15,16 @@ export const catalog: CatalogProduct[] = [
   { slug: "luno-classic-watch", name: "TALBETAL Classic Watch", category: "watches", priceBdt: 5250, image: "https://images.unsplash.com/photo-1524805444758-089113d48a6d?auto=format&fit=crop&w=900&q=85", description: "A clean everyday timepiece with a polished steel case and leather strap." },
   { slug: "signature-tote-bag", name: "Signature Tote Bag", category: "bags", priceBdt: 2890, image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=900&q=85", description: "A structured, versatile tote made for workdays and weekends." },
   { slug: "wireless-audio-pro", name: "Wireless Audio Pro", category: "electronics-and-gadgets", priceBdt: 4490, image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=900&q=85", description: "Comfortable wireless headphones with rich everyday audio." },
+  {
+    slug: "wireless-sport-bluetooth-earbuds",
+    name: "Wireless Sport Bluetooth Earbuds",
+    category: "electronics-and-gadgets",
+    priceBdt: 499,
+    image: "/products/wireless-sport-bluetooth-earbuds.png",
+    description: "Stylish yellow and black wireless earbuds with a portable charging case and digital battery display.",
+    fullDescription: "Enjoy your favorite music, movies, gaming, and phone calls with stylish Wireless Sport Bluetooth Earbuds. Designed with a modern yellow and black appearance, these wireless earbuds feature a digital battery display, touch control, and an attractive portable charging case.",
+    features: ["High-Fidelity Sound", "HD Microphone", "Digital Battery Display", "Touch Control", "Stylish Yellow & Black Design", "Portable Charging Case", "Wireless Music and Calling Support", "Suitable for Everyday Use"],
+  },
   { slug: "essentials-linen-shirt", name: "Essentials Linen Shirt", category: "mens-fashion", priceBdt: 2190, image: "https://images.unsplash.com/photo-1598032895397-b9472444bf93?auto=format&fit=crop&w=900&q=85", description: "An airy, tailored shirt in a timeless neutral tone." },
   { slug: "luna-satin-scarf", name: "Luna Satin Scarf", category: "womens-fashion", priceBdt: 1290, image: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=900&q=85", description: "A lightweight satin scarf that adds a polished finish to any look." },
   { slug: "eclipse-sunglasses", name: "Eclipse Sunglasses", category: "sunglasses", priceBdt: 1750, image: "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=900&q=85", description: "Modern UV-protective frames designed for effortless daily wear." },
