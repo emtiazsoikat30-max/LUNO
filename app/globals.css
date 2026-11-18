@@ -139,3 +139,27 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.admin-product-form label {
+  color: #09172e;
+  font-weight: 700;
+}
+
+.admin-product-form input:not([type="checkbox"]),
+.admin-product-form select,
+.admin-product-form textarea {
+  color: #09172e;
+  font-weight: 600;
+  background-color: #ffffff;
+}
+
+.admin-product-form input::placeholder,
+.admin-product-form textarea::placeholder {
+  color: #64748b;
+  opacity: 1;
+}
+
+.admin-product-form select option {
+  color: #09172e;
+  background: #ffffff;
+}
