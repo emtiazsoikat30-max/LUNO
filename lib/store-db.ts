@@ -188,7 +188,8 @@ export async function createStoreOrder(input: {
   const product = await getCatalogProductBySlug(input.slug);
   if (!product) throw new Error("The selected product is unavailable");
   if (!Number.isInteger(input.quantity) || input.quantity < 1 || input.quantity > 10) throw new Error("Invalid quantity");
-  const pricing = calculateOrderPricing(product.priceBdt, input.quantity, input.districtEnglishName);
+  const unitPriceBdt = product.discountPriceBdt ?? product.priceBdt;
+  const pricing = calculateOrderPricing(unitPriceBdt, input.quantity, input.districtEnglishName);
   const sql = sqlClient();
   await ensureSchema();
   const orderNumber = `TALBETAL-${Date.now().toString(36).toUpperCase()}-${crypto.randomUUID().slice(0, 5).toUpperCase()}`;
@@ -198,7 +199,7 @@ export async function createStoreOrder(input: {
       quantity, product_subtotal_bdt, delivery_charge_bdt, discount_bdt, total_payable_bdt, delivery_area,
       customer_name, phone, district, upazila, address, customer_session_id, payment_method
     ) VALUES (
-      ${orderNumber}, ${product.slug}, ${product.name}, ${product.image}, ${product.priceBdt},
+      ${orderNumber}, ${product.slug}, ${product.name}, ${product.image}, ${unitPriceBdt},
       ${input.quantity}, ${pricing.productSubtotalBdt}, ${pricing.deliveryChargeBdt}, ${pricing.discountBdt}, ${pricing.totalPayableBdt}, ${pricing.deliveryArea},
       ${input.name}, ${input.phone}, ${input.district}, ${input.upazila}, ${input.address}, ${input.customerSessionId}, 'cod'
     )

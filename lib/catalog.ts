@@ -39,3 +39,4 @@ export function getProductBySlug(slug: string) {
 }
 
 export function formatBdt(value: number) { return `Tk ${new Intl.NumberFormat("en-BD", { maximumFractionDigits: 0 }).format(value)}`; }
+export function sellingPriceBdt(product: CatalogProduct) { return product.discountPriceBdt ?? product.priceBdt; }

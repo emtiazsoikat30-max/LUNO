@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { CatalogProduct, formatBdt } from "@/lib/catalog";
+import { CatalogProduct, formatBdt, sellingPriceBdt } from "@/lib/catalog";
 import Link from "next/link";
 import { bangladeshDistricts, bangladeshUpazilas } from "@/lib/bangladesh-locations";
 import { LocationSearchSelect } from "@/components/location-search-select";
@@ -16,9 +16,11 @@ export function BuyNowForm({ product }: { product: CatalogProduct }) {
   const [districtId, setDistrictId] = useState("");
   const [upazilaId, setUpazilaId] = useState("");
   const [quantity, setQuantity] = useState(1);
+  const outOfStock = product.stockQuantity === 0;
   const upazilas = useMemo(() => bangladeshUpazilas.filter((upazila) => upazila.districtId === districtId), [districtId]);
   const district = useMemo(() => bangladeshDistricts.find((item) => item.id === districtId), [districtId]);
-  const pricing = useMemo(() => district ? calculateOrderPricing(product.priceBdt, quantity, district.en) : undefined, [district, product.priceBdt, quantity]);
+  const salePrice = sellingPriceBdt(product);
+  const pricing = useMemo(() => district ? calculateOrderPricing(salePrice, quantity, district.en) : undefined, [district, salePrice, quantity]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,9 +54,9 @@ export function BuyNowForm({ product }: { product: CatalogProduct }) {
   }
 
   if (sent) return <div className="mt-8 border border-emerald-600 bg-emerald-50 p-5 text-sm leading-6 text-emerald-950"><b className="text-base text-emerald-700">ORDER CONFIRMED ✓</b><p className="mt-1">Order no: <b>{orderNumber}</b>. Your delivery details have been securely saved. Cash on Delivery is selected.</p><Link href="/orders" className="mt-4 inline-block bg-[#09172e] px-4 py-3 text-xs font-bold tracking-[.1em] text-white">VIEW MY ORDER →</Link></div>;
-  if (!open) return <div className="mt-8"><button type="button" onClick={() => setOpen(true)} className="bg-[#09172e] px-7 py-4 text-xs font-bold tracking-[.13em] text-white">BUY NOW →</button></div>;
+  if (!open) return <div className="mt-8"><button type="button" disabled={outOfStock} onClick={() => setOpen(true)} className="bg-[#09172e] px-7 py-4 text-xs font-bold tracking-[.13em] text-white disabled:cursor-not-allowed disabled:bg-[#68758a]">{outOfStock ? "OUT OF STOCK" : "BUY NOW →"}</button></div>;
   return <form onSubmit={submit} className="mt-8 max-w-2xl border border-[#0b1830]/15 bg-[#fffdf8] p-5 sm:p-6">
-    <p className="text-xs font-bold tracking-[.14em] text-[#b38b45]">BUY NOW · {formatBdt(product.priceBdt)}</p><h2 className="mt-2 text-xl font-bold">Delivery details</h2><p className="mt-2 text-sm leading-6 text-[#40506b]">Enter your delivery details to order {product.name}.</p>
+    <p className="text-xs font-bold tracking-[.14em] text-[#b38b45]">BUY NOW · {formatBdt(salePrice)}</p><h2 className="mt-2 text-xl font-bold">Delivery details</h2><p className="mt-2 text-sm leading-6 text-[#40506b]">Enter your delivery details to order {product.name}.</p>
     <label className="mt-5 block text-sm font-semibold">Full name <span className="text-red-700" aria-hidden="true">*</span><input required name="name" autoComplete="name" placeholder="Your full name" maxLength={100} className="mt-2 w-full border border-[#0b1830]/20 bg-white px-3 py-3 outline-none placeholder:text-[#68758a] focus:border-[#b38b45] focus:ring-2 focus:ring-[#b38b45]/20" /></label>
     <label className="mt-4 block text-sm font-semibold">Mobile number <span className="text-red-700" aria-hidden="true">*</span><input required name="phone" type="tel" inputMode="numeric" autoComplete="tel" placeholder="01XXXXXXXXX" pattern="(?:\\+?88)?01[3-9][0-9]{8}" title="Enter a valid Bangladesh mobile number, for example 01712345678" className="mt-2 w-full border border-[#0b1830]/20 bg-white px-3 py-3 outline-none placeholder:text-[#68758a] focus:border-[#b38b45] focus:ring-2 focus:ring-[#b38b45]/20" /><span className="mt-1 block text-xs font-normal text-[#68758a]">Example: 01712345678</span></label>
     <label className="mt-4 block max-w-44 text-sm font-semibold">Quantity <select value={quantity} onChange={(event) => setQuantity(Number(event.target.value))} className="mt-2 w-full border border-[#0b1830]/20 bg-white px-3 py-3 outline-none focus:border-[#b38b45] focus:ring-2 focus:ring-[#b38b45]/20">{Array.from({ length: 10 }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
