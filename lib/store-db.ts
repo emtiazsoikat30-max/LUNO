@@ -25,6 +25,11 @@ export type StoreOrder = {
   createdAt: string;
 };
 
+export type VisitorAnalytics = {
+  totalVisitors: number;
+  liveVisitors: number;
+};
+
 let schemaPromise: Promise<void> | undefined;
 
 function databaseUrl() {
@@ -76,9 +81,39 @@ async function ensureSchema() {
       await sql`ALTER TABLE luno_orders ADD COLUMN IF NOT EXISTS delivery_area TEXT`;
       await sql`CREATE INDEX IF NOT EXISTS luno_orders_created_at_idx ON luno_orders (created_at DESC)`;
       await sql`CREATE INDEX IF NOT EXISTS luno_orders_customer_session_idx ON luno_orders (customer_session_id, created_at DESC)`;
+      await sql`CREATE TABLE IF NOT EXISTS luno_visitor_sessions (
+        visitor_id TEXT PRIMARY KEY,
+        first_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )`;
+      await sql`CREATE INDEX IF NOT EXISTS luno_visitor_sessions_last_seen_idx ON luno_visitor_sessions (last_seen_at DESC)`;
     })();
   }
   return schemaPromise;
+}
+
+export async function recordVisitor(visitorId: string) {
+  if (!/^[a-zA-Z0-9_-]{16,128}$/.test(visitorId)) throw new Error("Invalid visitor identifier");
+  const sql = sqlClient();
+  await ensureSchema();
+  await sql`
+    INSERT INTO luno_visitor_sessions (visitor_id, first_seen_at, last_seen_at)
+    VALUES (${visitorId}, NOW(), NOW())
+    ON CONFLICT (visitor_id) DO UPDATE SET last_seen_at = NOW()
+  `;
+}
+
+export async function getVisitorAnalytics(): Promise<VisitorAnalytics> {
+  const sql = sqlClient();
+  await ensureSchema();
+  const rows = await sql`
+    SELECT
+      COUNT(*)::int AS "totalVisitors",
+      COUNT(*) FILTER (WHERE last_seen_at >= NOW() - INTERVAL '2 minutes')::int AS "liveVisitors"
+    FROM luno_visitor_sessions
+  `;
+  const row = rows[0] as VisitorAnalytics | undefined;
+  return { totalVisitors: Number(row?.totalVisitors ?? 0), liveVisitors: Number(row?.liveVisitors ?? 0) };
 }
 
 export async function createStoreOrder(input: {
