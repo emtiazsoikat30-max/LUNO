@@ -4,7 +4,7 @@ import Script from "next/script";
 import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
-const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "2419577928857122";
 
 declare global {
   interface Window { fbq?: (...args: unknown[]) => void; }
