@@ -31,6 +31,7 @@ export type VisitorAnalytics = {
 };
 
 let schemaPromise: Promise<void> | undefined;
+let catalogCache: { products: CatalogProduct[]; expiresAt: number } | undefined;
 
 function databaseUrl() {
   return process.env.STORAGE_DATABASE_URL ?? process.env.DATABASE_URL;
@@ -123,9 +124,12 @@ const productSelect = `slug, name, category, price_bdt AS "priceBdt", discount_p
 
 export async function listCatalogProducts(includeInactive = false): Promise<CatalogProduct[]> {
   try {
+    if (catalogCache && catalogCache.expiresAt > Date.now()) return includeInactive ? catalogCache.products : catalogCache.products.filter((product) => product.active !== false);
     const sql = sqlClient(); await ensureSchema();
-    const rows = includeInactive ? await sql.query(`SELECT ${productSelect} FROM luno_products ORDER BY created_at DESC`) : await sql.query(`SELECT ${productSelect} FROM luno_products WHERE active = TRUE ORDER BY created_at DESC`);
-    return rows.map((row) => rowToProduct(row as Record<string, unknown>));
+    const rows = await sql.query(`SELECT ${productSelect} FROM luno_products ORDER BY created_at DESC`);
+    const products = rows.map((row) => rowToProduct(row as Record<string, unknown>));
+    catalogCache = { products, expiresAt: Date.now() + 60_000 };
+    return includeInactive ? products : products.filter((product) => product.active !== false);
   } catch { return includeInactive ? catalog : catalog.filter((product) => product.active !== false); }
 }
 
@@ -142,6 +146,7 @@ export async function saveCatalogProduct(input: AdminProductInput) {
     VALUES (${input.slug}, ${input.name}, ${input.category}, ${input.priceBdt}, ${input.discountPriceBdt ?? null}, ${input.image}, ${input.description}, ${input.fullDescription ?? null}, ${JSON.stringify(input.features ?? [])}::jsonb, ${input.stockQuantity ?? 0}, ${input.sku ?? null}, ${input.active !== false}, NOW())
     ON CONFLICT (slug) DO UPDATE SET name = EXCLUDED.name, category = EXCLUDED.category, price_bdt = EXCLUDED.price_bdt, discount_price_bdt = EXCLUDED.discount_price_bdt, image = EXCLUDED.image, short_description = EXCLUDED.short_description, full_description = EXCLUDED.full_description, features = EXCLUDED.features, stock_quantity = EXCLUDED.stock_quantity, sku = EXCLUDED.sku, active = EXCLUDED.active, updated_at = NOW()
     RETURNING slug, name, category, price_bdt AS "priceBdt", discount_price_bdt AS "discountPriceBdt", image, short_description AS "shortDescription", full_description AS "fullDescription", features, stock_quantity AS "stockQuantity", sku, active`;
+  catalogCache = undefined;
   return rowToProduct(rows[0] as Record<string, unknown>);
 }
 
