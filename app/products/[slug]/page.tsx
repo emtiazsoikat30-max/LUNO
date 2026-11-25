@@ -16,7 +16,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: `${product.name} | TALBETAL`,
     description: product.description,
-    openGraph: { title: `${product.name} | TALBETAL`, description: product.description, images: [product.image] },
+    alternates: { canonical: `/products/${product.slug}` },
+    openGraph: { title: `${product.name} | TALBETAL`, description: product.description, url: `/products/${product.slug}`, images: [product.image] },
   };
 }
 
