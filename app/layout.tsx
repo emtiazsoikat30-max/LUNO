@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { MetaPixel } from "@/components/meta-pixel";
 import { VisitorTracker } from "@/components/visitor-tracker";
+import { LanguageProvider } from "@/components/language-provider";
 
 export const metadata: Metadata = {
   title: "TALBETAL — Trends & Gadgets",
@@ -23,7 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased"><MetaPixel /><VisitorTracker />{children}</body>
+      <body className="antialiased"><LanguageProvider><MetaPixel /><VisitorTracker />{children}</LanguageProvider></body>
     </html>
   );
 }
